@@ -13,7 +13,7 @@
 
 $ErrorActionPreference = 'Stop'
 
-$VsixUrl  = "https://raw.githubusercontent.com/bhimsekhar/ai-code-reviewer/main/vscode-extension/ai-code-reviewer-1.0.0.vsix"
+$VsixUrl  = "https://raw.githubusercontent.com/bhimsekhar/ai-code-reviewer/master/vscode-extension/ai-code-reviewer-1.0.0.vsix"
 $TempPath = Join-Path $env:TEMP "ai-code-reviewer.vsix"
 
 Write-Host "=== AI Code Reviewer — Installation ===" -ForegroundColor Cyan

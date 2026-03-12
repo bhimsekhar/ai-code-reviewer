@@ -30,7 +30,7 @@ export async function installClaudeHookIfNeeded(
     )
     if (choice === 'Copy Command') {
       await vscode.env.clipboard.writeText(
-        'irm https://raw.githubusercontent.com/bhimsekhar/ai-code-reviewer/main/install/install.ps1 | iex'
+        'irm https://raw.githubusercontent.com/bhimsekhar/ai-code-reviewer/master/install/install.ps1 | iex'
       )
       vscode.window.showInformationMessage('Command copied to clipboard.')
     }

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-VSIX_URL="https://raw.githubusercontent.com/bhimsekhar/ai-code-reviewer/main/vscode-extension/ai-code-reviewer-1.0.0.vsix"
+VSIX_URL="https://raw.githubusercontent.com/bhimsekhar/ai-code-reviewer/master/vscode-extension/ai-code-reviewer-1.0.0.vsix"
 TMP="/tmp/ai-code-reviewer.vsix"
 
 echo "=== AI Code Reviewer — Installation ==="
