@@ -1,0 +1,136 @@
+{
+  "publisher": "bhimsekhar",
+  "name": "ai-code-reviewer",
+  "displayName": "AI Code Reviewer",
+  "description": "Forces comprehension review gates on AI-generated code — line-by-line streaming with mandatory checkpoints.",
+  "version": "1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bhimsekhar/ai-code-reviewer"
+  },
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "icon": "resources/icon.png",
+  "galleryBanner": {
+    "color": "#1e1e2e",
+    "theme": "dark"
+  },
+  "keywords": [
+    "ai",
+    "code review",
+    "claude",
+    "comprehension",
+    "learning",
+    "gates",
+    "streaming"
+  ],
+  "categories": [
+    "Other",
+    "Education"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "panel": [
+        {
+          "id": "ai-code-reviewer-panel",
+          "title": "AI Code Reviewer",
+          "icon": "$(shield)"
+        }
+      ]
+    },
+    "views": {
+      "ai-code-reviewer-panel": [
+        {
+          "type": "webview",
+          "id": "ai-code-reviewer.gateView",
+          "name": "Review Gate",
+          "when": "true"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "ai-code-reviewer.speedUp",
+        "title": "AI Reviewer: Speed Up"
+      },
+      {
+        "command": "ai-code-reviewer.speedDown",
+        "title": "AI Reviewer: Speed Down"
+      },
+      {
+        "command": "ai-code-reviewer.resetSpeed",
+        "title": "AI Reviewer: Reset Speed"
+      },
+      {
+        "command": "ai-code-reviewer.startReview",
+        "title": "AI Reviewer: Start Review (Manual)"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "ai-code-reviewer.speedUp",
+        "key": "ctrl+]",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "ai-code-reviewer.speedDown",
+        "key": "ctrl+[",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "ai-code-reviewer.resetSpeed",
+        "key": "ctrl+shift+r",
+        "when": "editorTextFocus"
+      }
+    ],
+    "configuration": {
+      "title": "AI Code Reviewer",
+      "properties": {
+        "ai-code-reviewer.adapter": {
+          "type": "string",
+          "default": "claude-code",
+          "enum": [
+            "claude-code"
+          ],
+          "description": "Which AI tool adapter to use. Phase 1 supports 'claude-code' only."
+        },
+        "ai-code-reviewer.coordinatorPort": {
+          "type": "number",
+          "default": 3131,
+          "description": "Port for the embedded coordinator HTTP server. Must match the hook's target port."
+        },
+        "ai-code-reviewer.defaultSpeedMs": {
+          "type": "number",
+          "default": 1000,
+          "description": "Default streaming speed in milliseconds per line. Hard cap is 100ms."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "node esbuild.js",
+    "package": "vsce package",
+    "watch": "node esbuild.js --watch"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "js-yaml": "^4.1.0",
+    "ws": "^8.16.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "@types/ws": "^8.5.10",
+    "@vscode/vsce": "^2.24.0",
+    "esbuild": "^0.20.0",
+    "typescript": "^5.3.0"
+  }
+}

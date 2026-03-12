@@ -1,0 +1,29 @@
+{
+  // AI Code Reviewer — Claude Code settings template
+  // Merge these entries into your ~/.claude/settings.json
+  //
+  // The PostToolUse hook fires after every Write or Edit tool call that Claude
+  // makes. The hook script reads the tool name and input, then POSTs the
+  // generated code to the VS Code extension's embedded coordinator on port 3131.
+  //
+  // If the coordinator is not running (VS Code closed, extension disabled),
+  // the hook exits 0 silently — Claude continues normally with no interruption.
+
+  "hooks": {
+    // PostToolUse: runs after Claude successfully calls any tool.
+    // The hook receives a JSON object on stdin with:
+    //   { tool_name, tool_input, tool_response }
+    "PostToolUse": [
+      {
+        // Path to the hook script — adjust to your actual plugin install path.
+        // When installed via `claude /plugin install`, Claude Code sets this
+        // automatically to the plugin's hooks/ directory.
+        "command": "~/.claude/plugins/ai-code-reviewer/hooks/post-tool-use.sh",
+
+        // Only fire for Write and Edit tools (code generation tools).
+        // Bash, Read, Glob, Grep etc. are excluded — no point reviewing those.
+        "match_tools": ["Write", "Edit"]
+      }
+    ]
+  }
+}

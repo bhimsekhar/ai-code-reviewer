@@ -1,0 +1,74 @@
+# .ai-code-reviewer.yml
+# Project-level configuration for AI Code Reviewer.
+# Place this file in the root of any repository you want to review with gates.
+# All settings are optional — omit any entry to use the built-in default.
+#
+# This file is read by the VS Code extension on activation and on each review session.
+# Changes take effect the next time a file is received from Claude Code.
+
+# ─── Adapter ────────────────────────────────────────────────────────────────
+# Which AI tool adapter to use.
+# Phase 1 supports 'claude-code' only.
+# Phase 2 will add: copilot
+adapter: claude-code
+
+# ─── Streaming ──────────────────────────────────────────────────────────────
+stream:
+  # Default streaming speed in milliseconds per line.
+  # Level 1 (default): 1000ms — comfortable reading pace.
+  # Levels: 1000 → 500 → 200 → 100 (hard cap).
+  # Keyboard shortcut Ctrl+] speeds up, Ctrl+[ slows down.
+  default_speed_ms: 1000
+
+  # Hard cap: never stream faster than this, regardless of Ctrl+] presses.
+  # Below 100ms a developer cannot read code — this is the integrity boundary.
+  # This value cannot be overridden by keyboard shortcuts or VS Code settings.
+  hard_cap_ms: 100
+
+  # Reset speed to default after every gate (pass or fail).
+  # Prevents developers from speeding through everything after the first gate.
+  # Set to false only if you trust your team to manage their own pace.
+  reset_after_gate: true
+
+# ─── Gate configuration ─────────────────────────────────────────────────────
+gates:
+  # Gate trigger mode. 'hybrid' is recommended.
+  # hybrid: gates fire when ANY condition is first met (method count, line count, or risk pattern).
+  mode: hybrid
+
+  logical:
+    # Fire a gate after this many non-boilerplate methods have been written since the last gate.
+    # Lower values = more frequent gates = more thorough review but more interruption.
+    every_n_methods: 3
+
+    # Fire a gate at every class boundary (class declaration line).
+    # 1 = always gate at class boundaries. 0 = skip class-boundary gates.
+    every_n_classes: 1
+
+  lines:
+    # Fallback: if no logical boundary has been reached within this many lines,
+    # fire a gate anyway. Prevents very long methods from going unreviewed.
+    fallback_every: 80
+
+  # Weighted probability pool for Tier 1 (standard code) checkpoint types.
+  # Values are relative weights — they do not need to sum to 100.
+  # Set a type's weight to 0 to disable it entirely.
+  tier1_pool:
+    limerick: 30      # 5-line poem summarising method behaviour
+    haiku: 15         # 3-line haiku describing condition or logic
+    fill_blank: 25    # "This method returns ___ when ___"
+    true_false: 20    # 3 statements, one is false — identify it
+    metaphor: 10      # Real-world metaphor — map an element back to code
+
+  # Prevent the same checkpoint type from appearing twice in a row.
+  # true = re-roll once if the selected type matches the previous gate's type.
+  no_repeat_consecutive: true
+
+  # Maximum number of wrong answers before streaming halts and escalation fires.
+  # After max_retries wrong answers: code block is highlighted, audit log flagged.
+  max_retries: 3
+
+  # Email address or Slack webhook URL to notify when a developer exceeds max_retries.
+  # Leave empty to disable escalation notifications.
+  # Example: tech-lead@yourcompany.com
+  escalate_to: ""

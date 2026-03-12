@@ -1,0 +1,10 @@
+{
+  "name": "ai-code-reviewer",
+  "version": "1.0.0",
+  "description": "Forces comprehension review gates on AI-generated code",
+  "publisher": "bhimsekhar",
+  "hooks": {
+    "PostToolUse": ".claude/hooks/post-tool-use.sh"
+  },
+  "systemPrompt": "prompts/system-prompt.md"
+}
