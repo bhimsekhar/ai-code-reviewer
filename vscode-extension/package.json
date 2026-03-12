@@ -39,7 +39,7 @@
       "panel": [
         {
           "id": "ai-code-reviewer-panel",
-          "title": "AI Code Reviewer",
+          "title": "AI Code Monitor",
           "icon": "$(shield)"
         }
       ]
