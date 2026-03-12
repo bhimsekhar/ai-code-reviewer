@@ -36,9 +36,59 @@ Write-Host "Installing VS Code extension..."
 Remove-Item $TempPath -Force -ErrorAction SilentlyContinue
 
 Write-Host ""
+# ─── Wire Claude Code hook ───────────────────────────────────────────────────
+Write-Host "Wiring Claude Code hook..."
+
+$ClaudeDir   = Join-Path $env:USERPROFILE ".claude"
+$HooksDir    = Join-Path $ClaudeDir "hooks"
+$HookDest    = Join-Path $HooksDir "ai-code-reviewer-post-tool-use.sh"
+$SettingsPath = Join-Path $ClaudeDir "settings.json"
+$HookUrl     = "https://raw.githubusercontent.com/bhimsekhar/ai-code-reviewer/master/claude-plugin/hooks/post-tool-use.sh"
+
+if (Test-Path $ClaudeDir) {
+    # Ensure hooks directory exists
+    if (-not (Test-Path $HooksDir)) {
+        New-Item -ItemType Directory -Path $HooksDir | Out-Null
+    }
+
+    # Download hook script
+    Invoke-WebRequest -Uri $HookUrl -OutFile $HookDest -UseBasicParsing
+
+    # Read or create settings.json
+    $Settings = @{}
+    if (Test-Path $SettingsPath) {
+        try {
+            $Settings = Get-Content $SettingsPath -Raw | ConvertFrom-Json -AsHashtable
+        } catch {
+            $Settings = @{}
+        }
+    }
+
+    if (-not $Settings.ContainsKey('hooks')) { $Settings['hooks'] = @{} }
+    if (-not $Settings['hooks'].ContainsKey('PostToolUse')) { $Settings['hooks']['PostToolUse'] = @() }
+
+    # Avoid duplicate
+    $AlreadyRegistered = $Settings['hooks']['PostToolUse'] | Where-Object {
+        $_.hooks | Where-Object { $_.command -like '*ai-code-reviewer*' }
+    }
+
+    if (-not $AlreadyRegistered) {
+        $Settings['hooks']['PostToolUse'] += @{
+            matcher = 'Write|Edit'
+            hooks   = @(@{ type = 'command'; command = $HookDest })
+        }
+        $Settings | ConvertTo-Json -Depth 10 | Set-Content $SettingsPath
+        Write-Host "Claude Code hook registered." -ForegroundColor Green
+    } else {
+        Write-Host "Claude Code hook already registered — skipped." -ForegroundColor Yellow
+    }
+} else {
+    Write-Host "~/.claude not found — Claude Code may not be installed. Skipping hook wiring." -ForegroundColor Yellow
+}
+
+Write-Host ""
 Write-Host "=== Done ===" -ForegroundColor Green
 Write-Host ""
 Write-Host "Reload VS Code (Ctrl+Shift+P -> 'Developer: Reload Window')."
-Write-Host "On first load, AI Code Reviewer will automatically wire up the Claude Code hook."
 Write-Host "Then ask Claude Code to write any file — it will stream with comprehension gates."
 Write-Host ""

@@ -21,23 +21,6 @@ export async function installClaudeHookIfNeeded(
     return
   }
 
-  // Windows: the hook is a bash script. Offer a manual path instead.
-  if (process.platform === 'win32') {
-    out.appendLine('[HookInstaller] Windows detected — skipping auto-install of bash hook.')
-    const choice = await vscode.window.showInformationMessage(
-      'AI Code Reviewer: To wire up Claude Code on Windows, run the one-line installer in PowerShell.',
-      'Copy Command'
-    )
-    if (choice === 'Copy Command') {
-      await vscode.env.clipboard.writeText(
-        'irm https://raw.githubusercontent.com/bhimsekhar/ai-code-reviewer/master/install/install.ps1 | iex'
-      )
-      vscode.window.showInformationMessage('Command copied to clipboard.')
-    }
-    await context.globalState.update(INSTALLED_KEY, true)
-    return
-  }
-
   const claudeDir   = path.join(os.homedir(), '.claude')
   const hooksDir    = path.join(claudeDir, 'hooks')
   const hookDest    = path.join(hooksDir, 'ai-code-reviewer-post-tool-use.sh')
@@ -57,7 +40,9 @@ export async function installClaudeHookIfNeeded(
   try {
     fs.mkdirSync(hooksDir, { recursive: true })
     fs.copyFileSync(hookSrc, hookDest)
-    fs.chmodSync(hookDest, 0o755)
+    if (process.platform !== 'win32') {
+      fs.chmodSync(hookDest, 0o755)
+    }
     out.appendLine(`[HookInstaller] Hook copied to ${hookDest}`)
 
     // Read or initialise settings.json
