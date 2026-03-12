@@ -181,11 +181,6 @@ export class Streamer {
           this.highlighter.clearAll(editor)
         }
 
-        // Boilerplate: stream at 5× speed (200ms), no gate, no green highlight
-        const blockSpeedMs = block.isBoilerplate
-          ? Math.max(200, this.HARD_CAP_MS)
-          : this.effectiveSpeedMs
-
         // Stream all lines in this block
         for (const streamLine of block.lines) {
           if (this.stopRequested) {
@@ -227,7 +222,11 @@ export class Streamer {
             this.highlighter.highlightCurrentLine(editor, insertedLineIndex + 1)
           }
 
-          await sleep(blockSpeedMs)
+          // Re-read speed on every line so Ctrl+Alt+] / Ctrl+Alt+[ take effect immediately
+          const lineSpeedMs = block.isBoilerplate
+            ? Math.max(200, this.HARD_CAP_MS)
+            : this.effectiveSpeedMs
+          await sleep(lineSpeedMs)
         }
 
         if (overallResult === 'aborted') {

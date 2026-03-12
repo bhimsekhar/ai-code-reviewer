@@ -79,19 +79,19 @@
     "keybindings": [
       {
         "command": "ai-code-reviewer.speedUp",
-        "key": "ctrl+]"
+        "key": "ctrl+alt+]"
       },
       {
         "command": "ai-code-reviewer.speedDown",
-        "key": "ctrl+["
+        "key": "ctrl+alt+["
       },
       {
         "command": "ai-code-reviewer.resetSpeed",
-        "key": "ctrl+shift+r"
+        "key": "ctrl+alt+0"
       },
       {
         "command": "ai-code-reviewer.toggleFastForward",
-        "key": "ctrl+shift+f"
+        "key": "ctrl+alt+f"
       }
     ],
     "configuration": {
