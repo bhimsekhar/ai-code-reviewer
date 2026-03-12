@@ -96,9 +96,11 @@ export class GateViewProvider implements vscode.WebviewViewProvider {
       return validate(gate, raw)
     }
 
-    // free-text: awareness gate if no answer key
+    // free-text fallback: no answer key available — require at least 4 words
+    // so the developer can't pass by typing a single character
     if (!gate.embedded?.answerKey) {
-      return raw.trim().length > 0
+      const wordCount = raw.trim().split(/\s+/).filter(w => w.length > 0).length
+      return wordCount >= 4
     }
 
     return validate(gate, raw)

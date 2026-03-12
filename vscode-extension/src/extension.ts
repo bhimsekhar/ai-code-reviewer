@@ -149,6 +149,9 @@ export function activate(context: vscode.ExtensionContext): void {
         'AI Code Reviewer is active. Next AI-generated file will be streamed automatically.'
       )
     }),
+    vscode.commands.registerCommand('ai-code-reviewer.toggleFastForward', () => {
+      streamer.toggleFastForward()
+    }),
     statusBar,
     highlighter,
     {

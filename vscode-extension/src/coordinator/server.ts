@@ -222,11 +222,9 @@ export class CoordinatorService extends EventEmitter {
     let methodsSinceLastGate = 0
     let lineNum = 1
 
-    // Map checkpoint start lines to checkpoint objects for quick lookup
-    const checkpointByLine = new Map<number, import('../types').EmbeddedCheckpoint>()
-    for (const cp of checkpoints) {
-      checkpointByLine.set(cp.lineStart, cp)
-    }
+    // Assign checkpoints in order — pop the next one for each gate that fires.
+    // Line-number matching is fragile after 🔑 lines are stripped (line numbers shift).
+    const checkpointQueue = [...checkpoints]
 
     const flushBlock = (gate?: Gate, isBoilerplate = false): void => {
       if (currentBlockLines.length > 0 || gate) {
@@ -245,9 +243,6 @@ export class CoordinatorService extends EventEmitter {
       const line = rawLines[i]
       const currentLineNum = lineNum++
 
-      // Check if a checkpoint starts at this line
-      const checkpoint = checkpointByLine.get(currentLineNum)
-
       currentBlockLines.push({ content: line, lineNum: currentLineNum })
       linesSinceLastGate++
 
@@ -255,13 +250,8 @@ export class CoordinatorService extends EventEmitter {
       const methodsInLine = countMethodsInRange([line], language)
       methodsSinceLastGate += methodsInLine
 
-      // Determine if we should gate here.
-      // Risk patterns upgrade the tier but don't fire a gate on every method —
-      // the normal shouldGate() cadence still applies. Only Tier 3 embedded
-      // checkpoints (from Claude's comments) fire immediately.
       const riskDetected = assessment.riskPatterns.length > 0
       const triggerGate =
-        (checkpoint !== undefined) ||
         shouldGate(linesSinceLastGate, methodsSinceLastGate, this.config) ||
         (riskDetected && methodsSinceLastGate >= 1 && linesSinceLastGate >= 10)
 
@@ -272,24 +262,27 @@ export class CoordinatorService extends EventEmitter {
           assessment.tier
 
         if (tier === 'skip') {
-          // Boilerplate block — flush without gate
           flushBlock(undefined, true)
           continue
         }
 
-        // Determine checkpoint type
-        const cpType = select(assessment, this.config, this.lastCheckpointType)
+        // Pop the next embedded checkpoint (order-based, not line-number based)
+        const nextCheckpoint = checkpointQueue.shift()
+
+        // Use the embedded checkpoint's type if available, otherwise select randomly
+        const cpType = nextCheckpoint
+          ? nextCheckpoint.type
+          : select(assessment, this.config, this.lastCheckpointType)
         this.lastCheckpointType = cpType
 
-        // Build gate
         const blockStart = currentBlockLines.length > 0
           ? currentBlockLines[0].lineNum
           : currentLineNum
         const gate: Gate = {
           id: uuidv4(),
           tier,
-          checkpointType: cpType,          // always stored so gate-ui knows what to show
-          embedded: checkpoint ?? undefined,
+          checkpointType: cpType,
+          embedded: nextCheckpoint,
           codeStartLine: blockStart,
           codeEndLine: currentLineNum,
           attempts: 0

@@ -70,23 +70,28 @@
       {
         "command": "ai-code-reviewer.startReview",
         "title": "AI Reviewer: Start Review (Manual)"
+      },
+      {
+        "command": "ai-code-reviewer.toggleFastForward",
+        "title": "AI Reviewer: Toggle Fast Forward (10×)"
       }
     ],
     "keybindings": [
       {
         "command": "ai-code-reviewer.speedUp",
-        "key": "ctrl+]",
-        "when": "editorTextFocus"
+        "key": "ctrl+]"
       },
       {
         "command": "ai-code-reviewer.speedDown",
-        "key": "ctrl+[",
-        "when": "editorTextFocus"
+        "key": "ctrl+["
       },
       {
         "command": "ai-code-reviewer.resetSpeed",
-        "key": "ctrl+shift+r",
-        "when": "editorTextFocus"
+        "key": "ctrl+shift+r"
+      },
+      {
+        "command": "ai-code-reviewer.toggleFastForward",
+        "key": "ctrl+shift+f"
       }
     ],
     "configuration": {

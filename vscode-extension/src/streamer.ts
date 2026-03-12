@@ -62,12 +62,11 @@ export class Streamer {
     vscode.window.showInformationMessage('AI Reviewer speed reset to 1×')
   }
 
-  holdFastForward(): void {
-    this.fastForwardActive = true
-  }
-
-  releaseFastForward(): void {
-    this.fastForwardActive = false
+  toggleFastForward(): void {
+    this.fastForwardActive = !this.fastForwardActive
+    const label = this.fastForwardActive ? '10× Fast Forward ON' : 'Fast Forward OFF'
+    vscode.window.showInformationMessage(`AI Reviewer: ${label}`)
+    this.statusBar.setSpeed(this.effectiveSpeedMs)
   }
 
   stop(): void {
@@ -260,9 +259,10 @@ export class Streamer {
               // Green → clear: block is reviewed and accepted
               this.highlighter.clearStreamingBlock(editor)
 
-              // Reset speed after gate if configured
+              // Reset speed and fast-forward after gate if configured
               if (this.config.stream.reset_after_gate) {
                 this.currentLevelIndex = 0
+                this.fastForwardActive = false
               }
             } else {
               gate.passed = false
