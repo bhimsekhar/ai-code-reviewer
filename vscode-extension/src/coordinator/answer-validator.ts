@@ -53,7 +53,7 @@ export function validate(gate: Gate, answer: string): boolean {
     return false
   }
 
-  const type = gate.embedded?.type ?? gate.security ? 'security_audit' : undefined
+  const type = gate.embedded?.type ?? (gate.security ? 'security_audit' : undefined)
 
   // Security audit (multiple choice)
   if (gate.security || type === 'security_audit') {

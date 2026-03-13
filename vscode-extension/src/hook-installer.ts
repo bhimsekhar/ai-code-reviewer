@@ -3,7 +3,72 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as os from 'os'
 
-const INSTALLED_KEY = 'claudeHookInstalled_v1'
+const INSTALLED_KEY = 'claudeHookInstalled_v2'
+
+const CLAUDE_MD_MARKER = '<!-- ai-code-reviewer-checkpoint-instructions -->'
+
+const CLAUDE_MD_INSTRUCTIONS = `
+${CLAUDE_MD_MARKER}
+## AI Code Monitor — Checkpoint Embedding (do not remove this section)
+
+When writing any code file, embed a review checkpoint comment at the end of every
+non-boilerplate method or function. Follow these rules exactly:
+
+1. **Never embed for boilerplate** — skip getters, setters, toString, equals, hashCode,
+   constructors, __init__, empty DTOs.
+2. **Never embed for security-sensitive code** — SQL, auth, crypto, file I/O, network,
+   env vars, hardcoded secrets. The gate engine handles these automatically.
+3. **Always include the 🔑 answer key line** — it is stripped before the developer sees it.
+4. **Rotate types** — never use the same type twice in a row within a file.
+5. **Be accurate** — every checkpoint must correctly describe the code above it.
+
+### Checkpoint formats (use exactly one per method boundary):
+
+**Limerick 🎭** — for methods with a single clear action:
+\`\`\`
+// 🎭 [line 1 — 8-9 syllables, rhymes with 2 and 5]
+//    [line 2 — 8-9 syllables]
+//    [line 3 — 5-6 syllables, rhymes with 4]
+//    [line 4 — 5-6 syllables]
+//    [line 5 — 8-9 syllables, punchline]
+// ❓ [question requiring understanding of what the method does or returns]
+// 🔑 [correct answer — stripped before display]
+\`\`\`
+
+**Haiku 🌸** — for conditional logic or predicates:
+\`\`\`
+// 🌸 [5 syllables]
+//    [7 syllables]
+//    [5 syllables]
+// ❓ [question about the condition or outcome]
+// 🔑 [correct answer]
+\`\`\`
+
+**Fill the Blank 📝** — for methods with two clear cases:
+\`\`\`
+// 📝 This method returns ___ when [condition A],
+//    and [throws/returns] ___ when [condition B].
+// ❓ What does this method return/throw when [condition B]?
+// 🔑 [exact return value or exception]
+\`\`\`
+
+**True / False ✅❌** — for methods with multiple behaviours:
+\`\`\`
+// ✅ Statement 1: [accurate statement]
+// ✅ Statement 2: [accurate statement]
+// ❌ Statement 3: [subtly false — plausible but wrong]
+// ❓ Which of these three statements is false?
+// 🔑 [full text of the false statement verbatim]
+\`\`\`
+
+**Metaphor 💡** — for orchestration or pipeline methods:
+\`\`\`
+// 💡 This is like [real-world analogy that accurately maps to the code].
+// ❓ In this metaphor, what represents [specific code element]?
+// 🔑 [the real-world equivalent]
+\`\`\`
+<!-- end ai-code-reviewer-checkpoint-instructions -->
+`
 
 /**
  * On first activation, copies the bundled PostToolUse hook into ~/.claude/hooks/
@@ -86,6 +151,23 @@ export async function installClaudeHookIfNeeded(
       out.appendLine('[HookInstaller] settings.json updated.')
     } else {
       out.appendLine('[HookInstaller] Hook already in settings.json — no change.')
+    }
+
+    // Write checkpoint embedding instructions to ~/.claude/CLAUDE.md
+    // Claude Code reads this at session start — this is how the system prompt is injected.
+    const claudeMdPath = path.join(claudeDir, 'CLAUDE.md')
+    try {
+      const existing = fs.existsSync(claudeMdPath)
+        ? fs.readFileSync(claudeMdPath, 'utf8')
+        : ''
+      if (!existing.includes(CLAUDE_MD_MARKER)) {
+        fs.writeFileSync(claudeMdPath, existing + CLAUDE_MD_INSTRUCTIONS)
+        out.appendLine('[HookInstaller] Checkpoint instructions written to ~/.claude/CLAUDE.md')
+      } else {
+        out.appendLine('[HookInstaller] CLAUDE.md already has checkpoint instructions — skipping.')
+      }
+    } catch (mdErr) {
+      out.appendLine(`[HookInstaller] Could not write CLAUDE.md: ${mdErr}`)
     }
 
     await context.globalState.update(INSTALLED_KEY, true)

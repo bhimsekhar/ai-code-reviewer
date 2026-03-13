@@ -33,7 +33,14 @@ export class GateViewProvider implements vscode.WebviewViewProvider {
 
         const gate: Gate = msg.gate as Gate
         const raw: string = msg.answer ?? ''
-        const passed = this._evaluate(gate, raw)
+
+        let passed = false
+        try {
+          passed = this._evaluate(gate, raw)
+        } catch (err) {
+          console.error('[AI Code Reviewer] _evaluate threw:', err)
+          passed = false
+        }
 
         resolve(passed)
 
